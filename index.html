@@ -33,6 +33,8 @@ button:not(:disabled){cursor:pointer}
 .ultimate{background:radial-gradient(circle at 50% 0%,rgba(243,201,112,.15),transparent 35%),linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.04))}.ultimate-prize{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin:16px 0}.money-box{border:1px solid rgba(243,201,112,.35);border-radius:16px;padding:12px 16px;background:rgba(243,201,112,.065)}.money-box b{display:block;color:var(--gold2);font-size:24px}
 .summary{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;text-align:left}.summary-panel{padding:16px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.045)}.summary-list{display:flex;flex-direction:column;gap:9px;margin-top:12px}.summary-item{display:flex;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:rgba(255,255,255,.03)}.summary-name{font-weight:800}.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;border:1px solid var(--line);color:#d9e4ef}.badge.used{border-color:rgba(239,179,194,.38);background:rgba(239,179,194,.08)}.badge.keep{border-color:rgba(243,201,112,.38);background:rgba(243,201,112,.08)}.badge.miss{opacity:.7}.end-note{max-width:740px;margin:14px auto 0;color:#d8dee9;line-height:1.85}
 .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:90}.confetti i{position:absolute;top:-20px;width:8px;height:14px;background:var(--gold);animation:fall 2.5s linear forwards}@keyframes fall{to{transform:translateY(110vh) rotate(780deg);opacity:.15}}
+.summary-flip.unused-card .summary-front{background:linear-gradient(145deg,#24304a,#151e30);border-color:rgba(243,201,112,.42)}
+.summary-flip.unused-card .summary-card-status{color:var(--gold2);font-weight:800}
 @media(max-width:760px){.options,.reveal,.poem-grid,.special-grid,.summary{grid-template-columns:1fr}.game-layout{grid-template-columns:1fr}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.step{display:block;text-align:center;padding:8px 4px}.brand-sub{display:none}}
 
 /* ===== v3 動畫強化 ===== */
@@ -173,6 +175,47 @@ button:not(:disabled){cursor:pointer}
   *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
+
+/* ===== v5 最終總覽與翻牌 ===== */
+.challenge-review{margin-top:24px;text-align:left}
+.challenge-review h3{margin-bottom:12px}
+.challenge-list{display:flex;flex-direction:column;gap:10px}
+.challenge-row{
+  border:1px solid var(--line);border-radius:15px;padding:12px 14px;
+  background:rgba(255,255,255,.035)
+}
+.challenge-row-top{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.challenge-q{font-weight:800;line-height:1.5}
+.challenge-meta{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.55}
+.challenge-ok{color:#9be2b6}.challenge-bad{color:#ffb4b4}.challenge-skip{color:var(--gold2)}
+
+.summary-card-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-top:12px
+}
+.summary-flip{
+  perspective:1100px;height:190px;border:0;background:none;padding:0;color:var(--text);
+}
+.summary-flip-inner{
+  position:relative;width:100%;height:100%;transform-style:preserve-3d;
+  transition:transform .72s var(--ease)
+}
+.summary-flip.flipped .summary-flip-inner{transform:rotateY(180deg)}
+.summary-face{
+  position:absolute;inset:0;border-radius:16px;overflow:hidden;
+  backface-visibility:hidden;border:1px solid var(--line);
+  background:linear-gradient(145deg,#182237,#0d1423);
+  box-shadow:0 12px 28px rgba(0,0,0,.22)
+}
+.summary-front{display:flex;align-items:center;justify-content:center;padding:14px;color:var(--text)}
+.summary-front-content{text-align:center}
+.summary-front .bigicon{font-size:36px;display:block;margin-bottom:8px}
+.summary-back{transform:rotateY(180deg);display:flex;flex-direction:column;color:var(--text)}
+.summary-back img{width:100%;height:105px;object-fit:cover;display:block}
+.summary-back-body{padding:9px 10px;font-size:12px;line-height:1.45}
+.summary-back-body b{display:block;color:var(--gold2);margin-bottom:4px;font-size:13px}
+.summary-card-status{margin-top:5px;font-size:11px;color:#d8e0ec}
+.summary-flip-hint{font-size:11px;color:var(--muted);margin-top:7px}
+
 </style>
 </head>
 <body>
@@ -185,7 +228,7 @@ button:not(:disabled){cursor:pointer}
 <section id="stage2End" class="screen card hero"><div class="eyebrow">Stage 02 Complete</div><h2>功能卡結算</h2><p class="lead">接下來就是真正有獎金壓力的地方了。</p><div class="special-grid" id="specialSummary"></div><button class="btn primary" onclick="startStage3()">進入獎金挑戰賽</button></section>
 <section id="stage3" class="screen"><div class="topline"><div><div class="eyebrow">Stage 03</div><h2>獎金挑戰賽</h2></div><div class="chip">目前獎金 <span id="currentPrize">$0</span></div></div><div class="game-layout"><aside class="card ladder"><h3>獎金階梯</h3><div class="steps" id="ladder"></div></aside><main class="card stage-wrap"><div class="question-meta"><span id="s3Num"></span><span class="prize" id="s3Prize"></span></div><div class="question" id="s3Question"></div><div id="s3PhotoWrap"></div><div class="options" id="s3Options"></div><div class="status" id="s3Status">可以直接作答，也可以先使用手上的牌。</div><div class="status" id="reviveBox" style="display:none;border-color:rgba(238,143,143,.45);background:rgba(238,143,143,.08)"></div><div class="resource-box"><div class="resource-head"><div><b>普通錦囊</b><div style="font-size:12px;color:var(--muted);margin-top:3px">3 張普通錦囊可復活一次。</div></div><b>剩餘 <span id="normalCount">0</span> 張</b></div><div class="cardbacks" id="normalCards"></div><div id="effectCard" class="effect-card"><img id="effectPhoto" class="effect-photo" alt="卡片照片"><div class="effect-body"><b id="effectTitle"></b><div id="effectText"></div></div></div><div style="margin-top:16px"><b>功能卡</b></div><div class="special-tools" id="specialTools"></div></div><div class="actions"><button class="btn danger" id="quitBtn">放棄，拿走目前獎金</button><button class="btn primary" id="s3Next" style="display:none">下一關</button></div></main></div></section>
 <section id="ultimate" class="screen card stage-wrap ultimate"><div class="center"><div class="eyebrow">Final Question</div><h1 style="font-size:clamp(40px,8vw,68px)">終極題</h1><p class="lead">剩下的每一張牌，都會決定這一題有多珍貴。現在，只剩最後一個問題。</p><div class="ultimate-prize"><div class="money-box">保底獎金<b>$50,000</b></div><div class="money-box">剩餘牌數<b id="ultimateCards">0 張</b></div><div class="money-box">本題價值<b id="ultimateBonus">$50,000</b></div></div><div class="question">哪一首，是我寫的？</div></div><div class="poem-grid" id="poemGrid"></div><div id="ultimateStatus" class="status center">點任何一首詩可以先閱讀全文，再決定答案。</div></section>
-<section id="ending" class="screen card hero"><div class="eyebrow">The End</div><div id="endingIcon" style="font-size:54px">🏆</div><h1 id="endingTitle" style="font-size:clamp(38px,8vw,64px)">挑戰完成</h1><p class="lead" id="endingLead"></p><div class="big-number" id="endingMoney">$0</div><p class="end-note" id="endingNote"></p><div class="summary"><div class="summary-panel"><h3>普通錦囊回顧</h3><div class="summary-list" id="normalSummary"></div></div><div class="summary-panel"><h3>功能卡回顧</h3><div class="summary-list" id="specialSummaryFinal"></div></div></div><button class="btn" onclick="location.reload()" style="margin-top:20px">重新開始</button></section>
+<section id="ending" class="screen card hero"><div class="eyebrow">The End</div><div id="endingIcon" style="font-size:54px">🏆</div><h1 id="endingTitle" style="font-size:clamp(38px,8vw,64px)">挑戰完成</h1><p class="lead" id="endingLead"></p><div class="big-number" id="endingMoney">$0</div><p class="end-note" id="endingNote"></p><div class="challenge-review"><div class="summary-panel"><h3>獎金挑戰題目回顧</h3><div class="challenge-list" id="challengeSummary"></div></div></div><div class="summary"><div class="summary-panel"><h3>普通錦囊回顧</h3><div class="summary-card-grid" id="normalSummary"></div><div class="summary-flip-hint">點卡片可以翻面查看照片與效果。</div></div><div class="summary-panel"><h3>功能卡回顧</h3><div class="summary-list" id="specialSummaryFinal"></div></div></div><button class="btn" onclick="location.reload()" style="margin-top:20px">重新開始</button></section>
 </div>
 <div id="poemModal" class="modal"><div class="modal-card"><div class="question-meta"><span id="modalLabel"></span><button class="btn" onclick="closePoem()">關閉</button></div><div class="poem-full" id="modalText"></div><div class="actions"><button class="btn primary" id="choosePoemBtn">就選這首</button></div></div></div>
 <div class="confetti" id="confetti"></div>
@@ -203,7 +246,7 @@ const $ = id => document.getElementById(id);
 const clone = x => JSON.parse(JSON.stringify(x));
 const money = n => '$' + Number(n).toLocaleString('en-US');
 function showScreen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active')); $(id).classList.add('active'); window.scrollTo({top:0,behavior:'smooth'});}function setHeader(t){$('headerStage').textContent=t;}function confetti(){const box=$('confetti');box.innerHTML='';for(let i=0;i<68;i++){const e=document.createElement('i');e.style.left=Math.random()*100+'%';e.style.animationDelay=Math.random()*.7+'s';e.style.transform='rotate('+Math.random()*180+'deg)';if(i%3===0)e.style.background='#efb3c2';box.appendChild(e);}setTimeout(()=>box.innerHTML='',3500);}function createOption(text,i,fn){const b=document.createElement('button');b.className='option';b.innerHTML='<span class="letter">'+letters[i]+'</span>'+text;b.onclick=()=>fn(i);return b;}function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-let s1Index=0,s1Score=0,s1First=null,s1Turn='husband';let s2Index=0;let specialState={husband:{owned:false,used:false},delete:{owned:false,used:false},vault:{owned:false,used:false}};let normalCards=[];let s3Index=0,currentPrize=0,waitingRevive=false,s3Locked=false;let questionState={hearts:false};let ultimateBonus=50000;
+let s1Index=0,s1Score=0,s1First=null,s1Turn='husband';let s2Index=0;let specialState={husband:{owned:false,used:false},delete:{owned:false,used:false},vault:{owned:false,used:false}};let normalCards=[];let s3Index=0,currentPrize=0,waitingRevive=false,s3Locked=false;let challengeHistory=[];let questionState={hearts:false};let ultimateBonus=50000;
 function startStage1(){setHeader('第一階段');showScreen('stage1');renderS1();}
 function renderS1(){const q=stage1Questions[s1Index];s1First=null;s1Turn='husband';$('s1Score').textContent=s1Score;$('s1Num').textContent='第 '+(s1Index+1)+' 題 / 10';$('s1Question').textContent=q.q;$('s1Options').innerHTML='';q.o.forEach((t,i)=>$('s1Options').appendChild(createOption(t,i,answerS1)));$('s1Status').textContent='👨 請老公先作答。選好後答案會自動隱藏。';$('s1Reveal').style.display='none';$('s1Continue').style.display='none';$('s1Play').style.display='block';$('s1Pass').style.display='none';}
 function answerS1(i){const q=stage1Questions[s1Index];if(s1Turn==='husband'){s1First=i;$('s1Play').style.display='none';$('s1Pass').style.display='block';$('s1PassBtn').onclick=()=>{s1Turn='wife';$('s1Pass').style.display='none';$('s1Play').style.display='block';$('s1Options').innerHTML='';q.o.forEach((t,j)=>$('s1Options').appendChild(createOption(t,j,answerS1)));$('s1Status').textContent='👩 現在換老婆作答。';};}else{[...$('s1Options').children].forEach(b=>b.disabled=true);$('s1Husband').textContent=letters[s1First]+'｜'+q.o[s1First];$('s1Wife').textContent=letters[i]+'｜'+q.o[i];$('s1Reveal').style.display='grid';if(i===s1First){s1Score++;$('s1Score').textContent=s1Score;$('s1Status').textContent='✨ 默契命中！獲得 1 張錦囊牌。';}else{$('s1Status').textContent='這題沒有對上 😏';}$('s1Continue').style.display='inline-block';$('s1Continue').textContent=s1Index===9?'看默契結果':'下一題';$('s1Continue').onclick=()=>{if(s1Index===9) finishS1(); else {s1Index++; renderS1();}};}}
@@ -241,7 +284,7 @@ function flipAndUseCard(button,card){
   },520);
 }
 function renderSpecialTools(){$('specialTools').innerHTML='';['husband','delete','vault'].forEach(k=>{const m=specialMeta[k],st=specialState[k];const b=document.createElement('button');b.className='tool';b.textContent=m.icon+' '+m.name;b.disabled=!st.owned||st.used||s3Locked||waitingRevive;b.onclick=()=>useSpecial(k);$('specialTools').appendChild(b);});}
-function showEffect(card,extra=''){$('effectPhoto').src=card.image;$('effectTitle').textContent=card.icon+' '+card.name;$('effectText').innerHTML='<div>'+card.msg+'</div>'+(extra?'<div style="margin-top:8px;color:var(--gold2)">'+extra+'</div>':'');$('effectCard').classList.add('show');}
+function showEffect(card,extra=''){$('effectPhoto').style.display='block';$('effectPhoto').src=card.image;$('effectTitle').textContent=card.icon+' '+card.name;$('effectText').innerHTML='<div>'+card.msg+'</div>'+(extra?'<div style="margin-top:8px;color:var(--gold2)">'+extra+'</div>':'');$('effectCard').classList.add('show');}
 function flashQuestion(){
   const q=$('s3Question');
   q.classList.remove('flash');
@@ -254,17 +297,86 @@ function bumpMoney(id){
   void el.offsetWidth;
   el.classList.add('bump');
 }
-function answerS3(i){if(s3Locked||waitingRevive)return;const q=stage3Questions[s3Index];[...$('s3Options').children].forEach(b=>b.disabled=true);if(i===q.a){s3Locked=true;currentPrize=q.p;$('currentPrize').textContent=money(currentPrize);bumpMoney('currentPrize');$('s3Options').children[i].classList.add('correct');$('s3Status').textContent='✅ 答對！目前獎金來到 '+money(currentPrize)+'。';confetti();afterCorrect();}else{$('s3Options').children[i].classList.add('wrong');$('s3Status').textContent='💥 答錯。';waitingRevive=true;showRevive();}renderNormalCards();renderSpecialTools();renderLadder();}
+function answerS3(i){
+  if(s3Locked||waitingRevive)return;
+  const q=stage3Questions[s3Index];
+  [...$('s3Options').children].forEach(b=>b.disabled=true);
+  if(i===q.a){
+    challengeHistory[s3Index]={question:q.q,selected:i,correct:q.a,result:'correct',prize:q.p};
+    s3Locked=true;currentPrize=q.p;$('currentPrize').textContent=money(currentPrize);bumpMoney('currentPrize');
+    $('s3Options').children[i].classList.add('correct');
+    $('s3Status').textContent='✅ 答對！目前獎金來到 '+money(currentPrize)+'。';
+    confetti();afterCorrect();
+  }else{
+    challengeHistory[s3Index]={question:q.q,selected:i,correct:q.a,result:'wrong',prize:q.p};
+    $('s3Options').children[i].classList.add('wrong');
+    $('s3Status').textContent='💥 答錯。';
+    waitingRevive=true;showRevive();
+  }
+  renderNormalCards();renderSpecialTools();renderLadder();
+}
 function afterCorrect(){$('s3Next').style.display='inline-block';$('s3Next').textContent=s3Index===7?'進入終極題':'下一關';$('s3Next').onclick=()=>{if(s3Index===7) startUltimate(); else {s3Index++; renderS3();}};$('quitBtn').disabled=true;renderNormalCards();flashQuestion();renderSpecialTools();}
 function consumeForRevive(n){for(const card of normalCards){if(!card.used&&n>0){card.used=true;card.usage='revive';n--;}}}
-function showRevive(){const box=$('reviveBox');box.style.display='block';if(getUnusedNormalCards().length>=3){box.innerHTML='<b>要花 3 張普通錦囊復活嗎？</b><div style="margin-top:9px">復活後可重新回答同一題。</div><div class="actions"><button class="btn primary" id="reviveYes">支付 3 張復活</button><button class="btn danger" id="reviveNo">不復活</button></div>';$('reviveYes').onclick=()=>{consumeForRevive(3);waitingRevive=false;box.style.display='none';[...$('s3Options').children].forEach(b=>{b.disabled=false;b.classList.remove('wrong');});$('s3Status').textContent='❤️‍🔥 復活成功。同一題再來一次。';renderNormalCards();renderSpecialTools();renderLadder();};$('reviveNo').onclick=()=>finishGame('fail');}else{box.innerHTML='<b>錦囊不足 3 張，無法復活。</b><div class="actions"><button class="btn danger" id="reviveNo">結束挑戰</button></div>';$('reviveNo').onclick=()=>finishGame('fail');}}
+function showRevive(){const box=$('reviveBox');box.style.display='block';if(getUnusedNormalCards().length>=3){box.innerHTML='<b>要花 3 張普通錦囊復活嗎？</b><div style="margin-top:9px">復活後可重新回答同一題。</div><div class="actions"><button class="btn primary" id="reviveYes">支付 3 張復活</button><button class="btn danger" id="reviveNo">不復活</button></div>';$('reviveYes').onclick=()=>{consumeForRevive(3);if(challengeHistory[s3Index])challengeHistory[s3Index].result='revived';waitingRevive=false;box.style.display='none';[...$('s3Options').children].forEach(b=>{b.disabled=false;b.classList.remove('wrong');});$('s3Status').textContent='❤️‍🔥 復活成功。同一題再來一次。';renderNormalCards();renderSpecialTools();renderLadder();};$('reviveNo').onclick=()=>finishGame('fail');}else{box.innerHTML='<b>錦囊不足 3 張，無法復活。</b><div class="actions"><button class="btn danger" id="reviveNo">結束挑戰</button></div>';$('reviveNo').onclick=()=>finishGame('fail');}}
 function disableWrong(count){const q=stage3Questions[s3Index];const options=[...$('s3Options').children];const wrong=options.map((b,i)=>i).filter(i=>i!==q.a&&!options[i].disabled);shuffle(wrong).slice(0,count).forEach(i=>{options[i].disabled=true;options[i].classList.add('dim');});}
 function useNormalCard(card){if(card.used||s3Locked||waitingRevive)return;card.used=true;card.usage='played';let extra='';switch(card.effect){case 'delete_all_wrong':{const q=stage3Questions[s3Index];[...$('s3Options').children].forEach((b,i)=>{if(i!==q.a){b.disabled=true;b.classList.add('dim');}});extra='所有錯誤選項已刪除。';break;}case 'delete_two_wrong':disableWrong(2);extra='兩個錯誤選項已刪除。';break;case 'hint_half':{const a=stage3Questions[s3Index].a;extra='提示：答案在'+(a<2?'前兩個':'後兩個')+'選項裡。';break;}case 'bold_question':$('s3Question').classList.add('is-bold');extra='問題已強化成粗體，看起來更有精神了。';break;case 'hearts':if(!questionState.hearts){questionState.hearts=true;[...$('s3Options').children].forEach(btn=>{if(!btn.innerHTML.includes('❤️'))btn.innerHTML+=' ❤️';});}extra='所有答案都被套上愛心了。';break;default:break;}showEffect(card,extra);flashQuestion();renderNormalCards();}
-function useSpecial(k){const st=specialState[k],q=stage3Questions[s3Index];if(!st.owned||st.used||s3Locked||waitingRevive)return;st.used=true;if(k==='husband'){$('effectPhoto').src=DATA.normalPool[6].image;$('effectTitle').textContent='👨 老公卡';$('effectText').innerHTML='<div>現在可以請老公解釋這一題，但不能直接說答案。</div>';$('effectCard').classList.add('show');}if(k==='delete'){disableWrong(2);$('effectPhoto').src=DATA.normalPool[5].image;$('effectTitle').textContent='✂️ 刪除卡';$('effectText').innerHTML='<div>兩個錯誤選項已刪除。</div>';$('effectCard').classList.add('show');}if(k==='vault'){s3Locked=true;currentPrize=q.p;$('currentPrize').textContent=money(currentPrize);bumpMoney('currentPrize');$('s3Status').textContent='🏃 撐竿跳！直接通過本關，獎金來到 '+money(currentPrize)+'。';[...$('s3Options').children].forEach((b,i)=>{b.disabled=true;if(i===q.a)b.classList.add('correct');});confetti();afterCorrect();}renderSpecialTools();}
+function useSpecial(k){const st=specialState[k],q=stage3Questions[s3Index];if(!st.owned||st.used||s3Locked||waitingRevive)return;st.used=true;if(k==='husband'){$('effectPhoto').style.display='none';$('effectPhoto').removeAttribute('src');$('effectTitle').textContent='👨 老公卡';$('effectText').innerHTML='<div>現在可以請老公解釋這一題，但不能直接說答案。</div>';$('effectCard').classList.add('show');}if(k==='delete'){disableWrong(2);$('effectPhoto').style.display='none';$('effectPhoto').removeAttribute('src');$('effectTitle').textContent='✂️ 刪除卡';$('effectText').innerHTML='<div>兩個錯誤選項已刪除。</div>';$('effectCard').classList.add('show');}if(k==='vault'){challengeHistory[s3Index]={question:q.q,selected:null,correct:q.a,result:'skipped',prize:q.p};s3Locked=true;currentPrize=q.p;$('currentPrize').textContent=money(currentPrize);bumpMoney('currentPrize');$('s3Status').textContent='🏃 撐竿跳！直接通過本關，獎金來到 '+money(currentPrize)+'。';[...$('s3Options').children].forEach((b,i)=>{b.disabled=true;if(i===q.a)b.classList.add('correct');});confetti();afterCorrect();}renderSpecialTools();}
 function startUltimate(){setHeader('終極題');const remainingSpecial=Object.values(specialState).filter(s=>s.owned&&!s.used).length;const remainingNormal=getUnusedNormalCards().length;ultimateBonus=50000+(remainingSpecial+remainingNormal)*10000;$('ultimateCards').textContent=(remainingSpecial+remainingNormal)+' 張';$('ultimateBonus').textContent=money(ultimateBonus);bumpMoney('ultimateBonus');$('poemGrid').innerHTML='';poems.forEach((p,i)=>{const btn=document.createElement('button');btn.className='poem-card';const preview=p.text.split('\n').filter(Boolean).slice(0,4).join('\n');btn.innerHTML='<div class="poem-label">'+p.label+'</div><div class="poem-preview">'+preview+'\n⋯</div><small style="color:var(--muted)">點擊閱讀全文</small>';btn.onclick=()=>{document.querySelectorAll('.poem-card').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');openPoem(i);};$('poemGrid').appendChild(btn);});showScreen('ultimate');}
 function openPoem(i){const p=poems[i];$('modalLabel').textContent='選項 '+p.label;$('modalText').textContent=p.text;$('choosePoemBtn').onclick=()=>choosePoem(i);$('poemModal').classList.add('show');}function closePoem(){$('poemModal').classList.remove('show');}
 function choosePoem(i){closePoem();if(i===3){$('ultimateStatus').innerHTML='✨ <b>答對了。</b><br>她認出了你的文字。';confetti();setTimeout(()=>finishGame('ultimateWin'),850);}else{$('ultimateStatus').innerHTML='這次沒有猜中。正確答案是 <b>D｜冰河</b>。';setTimeout(()=>finishGame('ultimateLose'),900);}}
-function renderFinalSummary(){const normalHost=$('normalSummary'),specialHost=$('specialSummaryFinal');normalHost.innerHTML='';specialHost.innerHTML='';if(normalCards.length===0){normalHost.innerHTML='<div class="summary-item"><span>這次沒有獲得普通錦囊</span></div>';}else{normalCards.forEach(c=>{let status='未使用',cls='keep';if(c.usage==='played'){status='已使用';cls='used';}if(c.usage==='revive'){status='用於復活';cls='used';}const div=document.createElement('div');div.className='summary-item';div.innerHTML='<div><div class="summary-name">'+c.icon+' '+c.name+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px">'+c.msg+'</div></div><span class="badge '+cls+'">'+status+'</span>';normalHost.appendChild(div);});}['husband','delete','vault'].forEach(k=>{const m=specialMeta[k],st=specialState[k];const div=document.createElement('div');div.className='summary-item';let status='未獲得',cls='miss';if(st.owned&&!st.used){status='保留到最後';cls='keep';}if(st.used){status='已使用';cls='used';}div.innerHTML='<div><div class="summary-name">'+m.icon+' '+m.name+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px">'+m.desc+'</div></div><span class="badge '+cls+'">'+status+'</span>';specialHost.appendChild(div);});}
+function renderFinalSummary(){
+  const normalHost=$('normalSummary'),specialHost=$('specialSummaryFinal'),challengeHost=$('challengeSummary');
+  normalHost.innerHTML='';specialHost.innerHTML='';challengeHost.innerHTML='';
+
+  // 題目回顧
+  stage3Questions.forEach((q,i)=>{
+    const h=challengeHistory[i];
+    const row=document.createElement('div');
+    row.className='challenge-row';
+    let resultText='未挑戰', resultClass='';
+    let answerText='—';
+    if(h){
+      if(h.result==='correct'){resultText='答對';resultClass='challenge-ok';}
+      else if(h.result==='skipped'){resultText='撐竿跳直接過關';resultClass='challenge-skip';}
+      else if(h.result==='revived'){resultText='曾答錯後復活';resultClass='challenge-bad';}
+      else if(h.result==='wrong'){resultText='答錯';resultClass='challenge-bad';}
+      if(h.selected!==null && h.selected!==undefined)answerText=letters[h.selected]+'｜'+q.o[h.selected];
+    }
+    row.innerHTML='<div class="challenge-row-top"><div class="challenge-q">第 '+(i+1)+' 題｜'+q.q+'</div><div class="'+resultClass+'">'+resultText+'</div></div>'+
+      '<div class="challenge-meta">獎金：'+money(q.p)+' ｜ 作答：'+answerText+' ｜ 正解：'+letters[q.a]+'｜'+q.o[q.a]+'</div>';
+    challengeHost.appendChild(row);
+  });
+
+  // 普通錦囊可翻牌
+  if(normalCards.length===0){
+    normalHost.innerHTML='<div class="summary-item"><span>這次沒有獲得普通錦囊</span></div>';
+  }else{
+    normalCards.forEach(c=>{
+      let status='未使用';
+      if(c.usage==='played')status='已使用';
+      if(c.usage==='revive')status='用於復活';
+      const b=document.createElement('button');
+      b.className='summary-flip'+(status==='未使用'?' unused-card':'');
+      b.innerHTML='<div class="summary-flip-inner">'+
+        '<div class="summary-face summary-front"><div class="summary-front-content"><span class="bigicon">'+c.icon+'</span><b>'+c.name+'</b><div class="summary-card-status">'+status+'</div><div class="summary-flip-hint">點一下翻牌</div></div></div>'+
+        '<div class="summary-face summary-back"><img src="'+c.image+'" alt="'+c.name+'"><div class="summary-back-body"><b>'+c.name+'</b><div>'+c.msg+'</div><div class="summary-card-status">'+status+'</div></div></div>'+
+      '</div>';
+      b.onclick=()=>b.classList.toggle('flipped');
+      normalHost.appendChild(b);
+    });
+  }
+
+  // 功能卡回顧
+  ['husband','delete','vault'].forEach(k=>{
+    const m=specialMeta[k],st=specialState[k];
+    const div=document.createElement('div');div.className='summary-item';
+    let status='未獲得',cls='miss';
+    if(st.owned&&!st.used){status='保留到最後';cls='keep';}
+    if(st.used){status='已使用';cls='used';}
+    div.innerHTML='<div><div class="summary-name">'+m.icon+' '+m.name+'</div><div style="font-size:12px;color:var(--muted);margin-top:3px">'+m.desc+'</div></div><span class="badge '+cls+'">'+status+'</span>';
+    specialHost.appendChild(div);
+  });
+}
 function finishGame(kind){setHeader('完成');let total=currentPrize,title='',lead='',note='',icon='🏆';if(kind==='quit'){title='安全下車';lead='你們選擇在這裡停下來。';note='有時候知道什麼時候帶著獎金離開，也是一種默契。';icon='💼';}if(kind==='fail'){title='挑戰結束';lead='這一關沒有過，但前面的回憶都是真的。';note='遊戲輸了沒關係，獎金停在上一個成功關卡。';icon='💥';}if(kind==='ultimateWin'){total=currentPrize+ultimateBonus;title='她認出了你的詩';lead='終極題答對，額外獲得 '+money(ultimateBonus)+'。';note='很多年後，我們站在冰河上，已經認不出最初的那片雪。但腳下很深很深的地方，每一層，都是我們。';icon='❤️';}if(kind==='ultimateLose'){title='週年挑戰完成';lead='終極題沒有猜中，但第三階段的獎金保留下來。';note='至於〈冰河〉——現在她知道了。';icon='🌙';}$('endingIcon').textContent=icon;$('endingTitle').textContent=title;$('endingLead').textContent=lead;$('endingMoney').textContent=money(total);setTimeout(()=>$('endingMoney').classList.add('bump'),80);$('endingNote').textContent=note;renderFinalSummary();showScreen('ending');}
 </script>
 </body>
